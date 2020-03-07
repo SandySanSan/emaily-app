@@ -24,25 +24,23 @@ passport.use(
             clientID: keys.googleClientID,
             clientSecret: keys.googleClientSecret,
             callbackURL: '/auth/google/callback',
+            // to avoid redirect_uri_mismatch google error
             proxy: true,
         },
-        (accessToken, refreshToken, profile, done) => {
+        async (accessToken, refreshToken, profile, done) => {
             // return promise
-            User.findOne({ googleId: profile.id }).then(existingUser => {
-                if (existingUser) {
-                    // record found with the given profile id
-                    done(null, existingUser);
-                    // done(), callback, tells passport the auth flow is complete
-                    // null -> no error
-                } else {
-                    // existingUser is null,
-                    // create as new instance of the Model Class
-                    // and save it to the db (create a new Model instance)
-                    new User({ googleId: profile.id })
-                        .save()
-                        .then(user => done(null, user));
-                }
-            });
+            const existingUser = await User.findOne({ googleId: profile.id });
+            if (existingUser) {
+                // record found with the given profile id
+                return done(null, existingUser);
+                // done(), callback, tells passport the auth flow is complete
+                // null -> no error
+            }
+            // existingUser is null,
+            // create as new instance of the Model Class
+            // and save it to the db (create a new Model instance)
+            const user = await new User({ googleId: profile.id }).save();
+            done(null, user);
         }
     )
 );
