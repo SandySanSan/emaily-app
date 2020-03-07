@@ -13,6 +13,7 @@ mongoose.connect(keys.mongoURI, {
 
 const app = express();
 
+// use() refers to middlewares (small functions that modify the incoming requests before they are sent off to route handlers)
 app.use(
     cookieSession({
         // thirty days in ms
